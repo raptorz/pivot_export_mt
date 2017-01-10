@@ -8,7 +8,7 @@ Only for [Pivot](http://pivotlog.net), not [PivotX](http://pivotx.net).
 
 # Usage
 
-Put the `export\_genericmt.php` file to `/pivot` directory, and open `http://yoursite.com/pivot/export\_genericmt.php` on browser for download exported data(a MovableType format text file).
+Put the `export_genericmt.php` file to `/pivot` directory, and open `http://yoursite.com/pivot/export_genericmt.php` on browser for download exported data(a MovableType format text file).
 
 # From
 
