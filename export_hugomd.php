@@ -26,12 +26,11 @@ function start_conversion() {
         $data = $db->read_entry($entry['code']);
         write_mtentry($data);
     }
-    header("Content-disposition: attachment; filename=pivot_mtexport.txt");
+    header("Content-disposition: attachment; filename=pivot_hugomd.txt");
     header("Content-type: text/plain");
     header("Pragma: no-cache");
     header("Expires: 0");
     echo implode("\n--------\n",$mt_exp_entries);
-    echo ("\n--------\n");
 }
 
 // This is where the actual parsing of the entry happens..
@@ -43,57 +42,49 @@ function write_mtentry($entry) {
     if ($entry['subtitle']!='') {
         $entry['title'] .= ' - '.$entry['subtitle'];
     }
-    $text[] = 'TITLE: '.$entry['title'];
-    $text[] = 'AUTHOR: '.$entry['user'];
-    $text[] = 'DATE: '.mt_exp_fixdate($entry['date']);
-    foreach ($entry['category'] as $category) {
-        $text[] = 'CATEGORY: '.$category;
-    }
+    $text[] = $entry['code'];
+    $text[] = '---';
+    $text[] = 'title: "'.$entry['title'].'"';
+    $text[] = 'date: '.hugomd_exp_fixdate($entry['date']);
     if ($entry['status']=='publish') {
-        $text[] = 'STATUS: publish';
+        $text[] = 'draft: false';
     } else {
-        $text[] = 'STATUS: draft';
+        $text[] = 'draft: true';
     }
-    $text[] = 'ALLOW COMMENTS: '.$entry['allow_comments'];
-    $text[] = 'CONVERT BREAKS: '.$entry['convert_lb'];
-    $text[] = '-----';
-    $text[] = 'BODY:';
+    foreach ($entry['category'] as $category) {
+        $text[] = 'categories: ["'.$category.'"]';
+    }
+    $text[] = 'author: "'.$entry['user'].'"';
+    $text[] = '---';
     $text[] = parse_intro_or_body($entry['body']);
+    $text[] = '';
     $text[] = '-----';
-    $text[] = 'EXTENDED BODY:';
-    $text[] = parse_intro_or_body($entry['introduction']);
-    $text[] = '-----';
+    $text[] = '';
     // Handling the comments
     if (!is_array($entry['comments'])) {
         $entry['comments'] = array();
     } 
     foreach ($entry['comments'] as $comment) {
-        $text[] = 'COMMENT:';
-        $text[] = 'AUTHOR: '.$comment['name'];
-        if (!empty($comment['email'])) {
-            $text[] = 'EMAIL: '.$comment['email'];
-        }
+        $text[] = '> '.str_replace(PHP_EOL, '  '.PHP_EOL, $comment['comment']);
         if (!empty($comment['url'])) {
-            $text[] = 'URL: '.$comment['url'];
+            $url = $comment['url'];
         }
-        $text[] = 'IP: '.$comment['ip'];
-        $text[] = 'DATE: '.mt_exp_fixdate($comment['date']);
-        $text[] = $comment['comment'];
-        $text[] = '-----';
+        else {
+            $url = 'mailto:'.$comment['email'];
+        }
+        $text[] = '>';
+        $text[] = '> -- ['.$comment['name'].']('.$url.') at '.hugomd_exp_fixdate($comment['date']);
+        $text[] = '';
     }
     // Handling the trackbacks
     if (!is_array($entry['trackbacks'])) {
         $entry['trackbacks'] = array();
     } 
     foreach ($entry['trackbacks'] as $trackback) {
-        $text[] = 'PING:';
-        $text[] = 'TITLE: '.$trackback['title'];
-        $text[] = 'URL: '.$trackback['url'];
-        $text[] = 'IP: '.$trackback['ip'];
-        $text[] = 'BLOG NAME: '.$trackback['name'];
-        $text[] = 'DATE: '.mt_exp_fixdate($trackback['date']);
-        $text[] = $trackback['excerpt'];
-        $text[] = '-----';
+        $text[] = '> '.str_replace(PHP_EOL, '  '.PHP_EOL, $trackback['excerpt']);
+        $text[] = '>';
+        $text[] = '> -- 《['.$trackback['name'].'-'.$trackback['title'].']('.$trackback['url'].')》 at '.hugomd_exp_fixdate($trackback['date']);
+        $text[] = '';
     }
     // Add this entry to export array
     $mt_exp_entries[] = implode("\n",$text);
@@ -105,9 +96,9 @@ function write_mtentry($entry) {
  * Pivot date format is "2007-01-31-17-20".
  * MT date format is "01/31/2007 17:20:00".
  */
-function mt_exp_fixdate($date) {
+function hugomd_exp_fixdate($date) {
     list($year,$month,$day,$hour,$minute) = explode('-',$date);
-    return "$month/$day/$year $hour:$minute:00";
+    return "$year-$month-$dayT$hour:$minute:00+08:00";
 }
 
 /**
@@ -145,9 +136,8 @@ if (isset($_GET) && ($_GET['action'] == 'export')) {
 	<title>The quick-and-dirty Pivot to MT export script</title>
 </head>
 <body>
-<h1>Welcome to the quick-and-dirty Pivot to MT export script</h1>
-<p>Use this to export entries from Pivot to the generic MT export format.
-(<a href="http://www.movabletype.org/documentation/appendices/import-export-format.html">Info on the format</a>)</p>
+<h1>Welcome to the quick-and-dirty Pivot to HUGO markdown export script</h1>
+<p>Use this to export entries from Pivot to the HUGO markdown export format.</p>
 EOM;
 
     show_form();
