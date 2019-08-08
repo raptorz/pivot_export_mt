@@ -98,7 +98,7 @@ function write_mtentry($entry) {
  */
 function hugomd_exp_fixdate($date) {
     list($year,$month,$day,$hour,$minute) = explode('-',$date);
-    return "$year-$month-$dayT$hour:$minute:00+08:00";
+    return "$year-$month-$day"."T"."$hour:$minute".":00+08:00";
 }
 
 /**
