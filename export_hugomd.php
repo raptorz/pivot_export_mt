@@ -54,7 +54,7 @@ function write_mtentry($entry) {
     foreach ($entry['category'] as $category) {
         $text[] = 'categories: ["'.$category.'"]';
     }
-    $text[] = 'author: "'.$entry['user'].'"';
+    $text[] = 'authors: ["'.$entry['user'].'"]';
     $text[] = '---';
     $text[] = parse_intro_or_body($entry['body']);
     $text[] = '';
